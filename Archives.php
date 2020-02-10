@@ -10,9 +10,7 @@
 */ 
 if (!defined('__TYPECHO_ROOT_DIR__')) exit;
 $setting = $GLOBALS['VOIDSetting'];
-?>
-
-<?php 
+ 
 if(!Utils::isPjax()){
     $this->need('includes/head.php');
     $this->need('includes/header.php');
@@ -23,33 +21,49 @@ if(!Utils::isPjax()){
     <title hidden>
         <?php Contents::title($this); ?>
     </title>
-    
+
+    <?php $this->need('includes/ldjson.php'); ?>
     <?php $this->need('includes/banner.php'); ?>
 
-    <div class="wrapper container">
-        <section id="archive-list" class="yue">
-            <h1 <?php if($setting['titleinbanner']) echo 'hidden'; ?> class="post-title"><?php $this->title(); ?></h1>
-            <?php if(!$setting['titleinbanner']): ?>
-            <p class="post-meta">
-                <?php 
-                    echo Utils::getCatNum()." 分类 × ".Utils::getPostNum()." 文章 × ".Utils::getTagNum()." 标签 × ".Utils::getWordCount()." 字";
-                ?>
-            </p>
+    <div class="wrapper container narrow">
+        <div class="tag-cloud yue float-up">
+            <h2>Tags</h2>
+            <?php $this->widget('Widget_Metas_Tag_Cloud', 'sort=count&ignoreZeroCount=1&desc=1&limit=50')->to($tags); ?>
+            <?php if($tags->have()): ?>
+            <?php while ($tags->next()): ?>
+                <a href="<?php $tags->permalink(); ?>" rel="tag" class="tag-item btn btn-normal btn-narrow" title="<?php $tags->count(); ?> 个话题"><?php $tags->name(); ?></a>
+            <?php endwhile; ?>
+            <?php else: ?>
+                <?php echo('还没有标签哦～'); ?>
             <?php endif; ?>
-            <?php $archives = Contents::archives(); $index = 0; foreach ($archives as $year => $posts): ?>
-                <section aria-label="<?php echo $year; ?>年归档列表"  class="year<?php if($index > 0) echo ' shrink'; ?>" data-year="<?php echo $year; ?>" data-num="<?php echo count($posts); ?>">
+        </div>
+        <section id="archive-list" class="yue float-up">
+            <?php $archives = Contents::archives($this); $index = 0; foreach ($archives as $year => $posts): ?>
+                <h2><?php echo $year; ?>
+                    <span class="num-posts"><?php $post_num = count($posts); echo $post_num; ?> 篇</span>
+                    <a no-pjax target="_self" data-num="<?php echo $post_num; ?>" 
+                        data-year="<?php echo $year; ?>" 
+                        class="toggle-archive" href="javascript:void(0);" 
+                        onclick="VOID_Ui.toggleArchive(this); return false;"><?php if($index > 0) echo '+'; else echo '-'; ?>
+                    </a>
+                </h2>
+                <section id="year-<?php echo $year; ?>" 
+                    class="year<?php if($index > 0) echo ' shrink'; ?>" 
+                    style="max-height: <?php if($index > 0) echo '0'; else echo $post_num*49; ?>px; transition-duration: <?php echo $post_num * 0.03 > 0.8 ? 0.8:$post_num * 0.03; ?>s">
                     <ul>
-                <?php foreach($posts as $created => $post): ?>
-                        <li data-date="<?php echo date('m-d', $created); ?>"><a class="archive-title" data-words="<?php echo $post['words']; ?>" href="<?php echo $post['permalink']; ?>"><?php echo $post['title']; ?></a></li>
-                <?php endforeach; ?>
+                    <?php foreach($posts as $created => $post): ?>
+                        <li>
+                            <a class="archive-title<?php if($setting['VOIDPlugin']) echo ' show-word-count'; ?>" 
+                                data-words="<?php if($setting['VOIDPlugin']) echo $post['words']; ?>" 
+                                href="<?php echo $post['permalink']; ?>">
+                                <span class="date"><?php echo date('m-d', $created); ?></span><?php echo $post['title']; ?>
+                            </a>
+                        </li>
+                    <?php endforeach; ?>
                     </ul>
-                    <a role=button aria-label="收起与展开列表" class="toggle-archive" target="_self" href="javascript:void(0);" onclick="VOID.toggleArchive(this);"><?php if($index > 0) echo '+'; else echo '-'; ?></a>
                 </section>
             <?php $index = $index + 1; endforeach; ?>
         </section>
-
-        <!--评论区，可选-->
-        <?php if ($this->allow('comment')) $this->need('includes/comments.php'); ?>
     </div>
 </main>
 

@@ -64,6 +64,11 @@ class VOID_Widget_Comments_Archive extends Widget_Abstract_Comments
     private $_commentAuthors = array();
 
     /**
+     * 安全组件
+     */
+    private $_security = NULL;
+
+    /**
      * 构造函数,初始化组件
      *
      * @access public
@@ -77,6 +82,8 @@ class VOID_Widget_Comments_Archive extends Widget_Abstract_Comments
         parent::__construct($request, $response, $params);
         $this->parameter->setDefault('parentId=0&commentPage=0&commentsNum=0&allowComment=1');
         
+        Typecho_Widget::widget('Widget_Security')->to($this->_security);
+
         /** 初始化回调函数 */
         if (function_exists('threadedComments')) {
             $this->_customThreadedCommentsCallback = true;
@@ -95,6 +102,8 @@ class VOID_Widget_Comments_Archive extends Widget_Abstract_Comments
         if (function_exists('threadedComments')) {
             return threadedComments($this, $singleCommentOptions);
         }
+
+        $setting = $GLOBALS['VOIDSetting'];
         
         $commentClass = '';
         if ($this->authorId) {
@@ -104,8 +113,16 @@ class VOID_Widget_Comments_Archive extends Widget_Abstract_Comments
                 $commentClass .= ' comment-by-user';
             }
         }
+
+        if ($setting['VOIDPlugin']) {
+            $metaArr = $this->getLikesAndDislikes();
+            if ($metaArr['dislikes'] >= $setting['commentFoldThreshold'][0]
+            && ($metaArr['dislikes'] >= $metaArr['likes']*$setting['commentFoldThreshold'][1])) {
+                $commentClass .= ' fold';
+            }
+        }
 ?>
-<div itemscope itemtype="http://schema.org/UserComments" id="<?php $this->theId(); ?>" class="comment-body<?php
+<div id="<?php $this->theId(); ?>" class="comment-body<?php
     if ($this->levels > 0) {
         echo ' comment-child';
         $this->levelsAlt(' comment-level-odd', ' comment-level-even');
@@ -117,30 +134,53 @@ class VOID_Widget_Comments_Archive extends Widget_Abstract_Comments
 ?>">
     <div class="comment-content-wrap">
         <div class="comment-meta">
-            <div class="comment-author" itemprop="creator" itemscope itemtype="http://schema.org/Person">
-                <span class="comment-avatar" itemprop="image"><?php $this->gravatar($singleCommentOptions->avatarSize, $singleCommentOptions->defaultAvatar); ?></span>
-                <b><cite class="fn" itemprop="name"><?php $singleCommentOptions->beforeAuthor();
+            <div class="comment-author">
+                <span class="comment-avatar"><?php $this->gravatar($singleCommentOptions->avatarSize, $singleCommentOptions->defaultAvatar); ?></span>
+                <b><cite class="fn"><?php $singleCommentOptions->beforeAuthor();
                 $this->author();
                 $singleCommentOptions->afterAuthor(); ?></cite></b><span><?php echo $this->getParent(); ?></span>
             </div>
             <span>
-                <a href="<?php $this->permalink(); ?>"><time itemprop="commentTime" datetime="<?php $this->date('c'); ?>"><?php $singleCommentOptions->beforeDate();
+                <a href="<?php $this->permalink(); ?>"><timedatetime="<?php $this->date('c'); ?>"><?php $singleCommentOptions->beforeDate();
                 echo date('Y-m-d H:i', $this->created);
                 $singleCommentOptions->afterDate(); ?></time></a>
                 <?php if ('waiting' == $this->status) { ?>
                 <em class="comment-awaiting-moderation"><?php $singleCommentOptions->commentStatus(); ?></em>
                 <?php } ?>
+                <?php if ($setting['VOIDPlugin']) { ?>
+                <a style="margin: 0 5px" no-pjax target="_self" class="comment-vote vote-button" 
+                    href="javascript:void(0)" 
+                    onclick="VOID_Vote.vote(this)"
+                    data-item-id="<?php echo $this->coid;?>" 
+                    data-type="up"
+                    data-table="comment"
+                ><i class="voidicon-thumbs-up"></i> <span class="value"><?php echo $metaArr['likes']?></span>
+                </a>
+                <a no-pjax target="_self" class="comment-vote vote-button" 
+                    href="javascript:void(0)" 
+                    onclick="VOID_Vote.vote(this)"
+                    data-item-id="<?php echo $this->coid;?>" 
+                    data-type="down"
+                    data-table="comment"
+                ><i class="voidicon-thumbs-down"></i> <span class="value"><?php echo $metaArr['dislikes']?></span>
+                </a>
+                <?php } ?>
             </span>
         </div>
-        <div class="comment-content yue" itemprop="commentText">
-            <?php echo Contents::parseBiaoQing($this->content); ?>
+        <div class="comment-content yue">
+            <?php if ($setting['VOIDPlugin'] && $metaArr['dislikes'] >= $setting['commentFoldThreshold'][0]
+            && ($metaArr['dislikes'] >= $metaArr['likes']*$setting['commentFoldThreshold'][1])) { ?>
+                <span class="fold">[该评论已被自动折叠 | <a no-pjax target="_self" href="javascript:void(0)" 
+                onclick="VOID_Vote.toggleFoldComment(<?php echo $this->coid; ?>, this)">点击展开</a>]</span>
+            <?php }?>
+            <div class="comment-content-inner"><?php echo Contents::parseBiaoQing($this->content); ?></div>
         </div>
         <div class="comment-reply">
             <?php $this->reply($singleCommentOptions->replyWord); ?>
         </div>
     </div>
     <?php if ($this->children) { ?>
-    <div class="comment-children" itemprop="discusses">
+    <div class="comment-children">
         <?php $this->threadedComments(); ?>
     </div>
     <?php } ?>
@@ -150,14 +190,27 @@ class VOID_Widget_Comments_Archive extends Widget_Abstract_Comments
   
     private function getParent(){
         $db = Typecho_Db::get();
-        $parentID = $db->fetchRow($db->select()->from('table.comments')->where('coid = ?', $this->coid));
+        $parentID = $db->fetchRow($db->select('parent')->from('table.comments')->where('coid = ?', $this->coid));
         $parentID=$parentID['parent'];
         if($parentID=='0') return '';
         else {
             $author=$db->fetchRow($db->select()->from('table.comments')->where('coid = ?', $parentID));
+            if (!array_key_exists('author', $author) || empty($author['author']))
+                $author['author'] = '已删除的评论';
             return ' <span style="font-size: 0.9rem">回复</span> <b style="font-size:0.9rem;margin-right: 0.3em">@'.$author['author'].'</b> ';
         }
     }  
+
+    /**
+     * 获取评论赞踩
+     */
+    private function getLikesAndDislikes() {
+        $db = Typecho_Db::get();
+        $row = $db->fetchRow($db->select('likes, dislikes')
+            ->from('table.comments')
+            ->where('coid = ?', $this->coid));
+        return array('likes' => $row['likes'], 'dislikes' => $row['dislikes']);
+    }
     
     /**
      * 获取当前评论链接
@@ -244,8 +297,16 @@ class VOID_Widget_Comments_Archive extends Widget_Abstract_Comments
 
         $commentsAuthor = Typecho_Cookie::get('__typecho_remember_author');
         $commentsMail = Typecho_Cookie::get('__typecho_remember_mail');
-        $select = $this->select()->where('table.comments.cid = ?', $this->parameter->parentId)
-        ->where('table.comments.status = ? OR (table.comments.author = ? AND table.comments.mail = ? AND table.comments.status = ?)', 'approved', $commentsAuthor, $commentsMail, 'waiting');
+
+        // 对已登录用户显示待审核评论，方便前台管理
+        if ($this->user->hasLogin()) {
+            $select = $this->select()->where('table.comments.cid = ?', $this->parameter->parentId)
+                ->where('table.comments.status = ? OR table.comments.status = ?', 'approved', 'waiting');
+        } else {
+            $select = $this->select()->where('table.comments.cid = ?', $this->parameter->parentId)
+                ->where('table.comments.status = ? OR (table.comments.author = ? AND table.comments.mail = ? AND table.comments.status = ?)', 'approved', $commentsAuthor, $commentsMail, 'waiting');
+        }
+
         $threadedSelect = NULL;
         
         if ($this->options->commentsShowCommentOnly) {
@@ -442,7 +503,7 @@ class VOID_Widget_Comments_Archive extends Widget_Abstract_Comments
             'afterDate'     =>  '',
             'dateFormat'    =>  $this->options->commentDateFormat,
             'replyWord'     =>  '回复',
-            'commentStatus' =>  '您的评论正等待审核!',
+            'commentStatus' =>  '评论正等待审核!',
             'avatarSize'    =>  32,
             'defaultAvatar' =>  NULL
         ));

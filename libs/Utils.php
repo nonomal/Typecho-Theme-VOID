@@ -63,16 +63,6 @@ class Utils
     }
 
     /**
-     * 输出图片懒加载注册js
-     * 
-     * @return void
-     */
-    public static function registerLazyImg($url, $id)
-    {
-        echo '<script>registerLazyLoadImg("'.$url.'","[data-lazy-id=\''.$id.'\']")</script>';
-    }
-
-    /**
      * PJAX判定
      * 
      * @return bool
@@ -83,11 +73,28 @@ class Utils
     }
 
     /**
-     * AJAX判定
+     * 使用衬线体判定
      */
-    public static function isAjax()
+    public static function isSerif($setting)
     {
-        return array_key_exists('HTTP_X_VOID_AJAX', $_SERVER) && $_SERVER['HTTP_X_VOID_AJAX'];
+        if(isset($_COOKIE['serif'])) {
+            if ($_COOKIE['serif']=='1') return true; 
+        } else {
+            if ($setting['serifincontent']) return true;
+        }
+        return false;
+    }
+
+    /**
+     * 界面大小风格
+     * 1: 14px, 2: 16px, 3: 18px, 4: 20px, 5: 22px
+     */
+    public static function getTextSize($setting) {
+        if(isset($_COOKIE['textsize'])) {
+            return $_COOKIE['textsize'];
+        } else {
+            return $setting['defaultFontSize'];
+        }
     }
 
     /**
@@ -117,13 +124,10 @@ class Utils
     }
 
     /**
-     * 电脑微信判定
-     * 
-     * @return bool
+     * iOS 判定
      */
-    public static function isWeixin() 
-    {
-        return  !self::isMobile() && strpos($_SERVER['HTTP_USER_AGENT'], 'MicroMessenger') !== false; 
+    public static function isIosSafari () {
+        return strpos($_SERVER['HTTP_USER_AGENT'], 'iPhone') || strpos($_SERVER['HTTP_USER_AGENT'], 'iPad');
     }
 
     /**
@@ -134,11 +138,11 @@ class Utils
     public static function addButton()
     {
         echo '<script src="';
-        self::indexTheme('/assets/libs/owo/owo_01.js');
+        self::indexTheme('/assets/libs/owo/owo_02.js');
         echo '"></script>';
 
         echo '<script src="';
-        self::indexTheme('/assets/editor-ee76ad425f.js');
+        self::indexTheme('/assets/editor-d6bdd77f4b.js');
         echo '"></script>';
 
         echo '<link rel="stylesheet" href="';
@@ -147,9 +151,6 @@ class Utils
        
         echo '<style>#custom-field textarea,#custom-field input{width:100%}
         .OwO span{background:none!important;width:unset!important;height:unset!important}
-        .OwO .OwO-logo{
-            z-index: unset!important;
-        }
         .OwO .OwO-body .OwO-items{
             -webkit-overflow-scrolling: touch;
             overflow-x: hidden;
@@ -173,7 +174,8 @@ class Utils
                 max-width:-webkit-calc(25% - 10px);
                 max-width:calc(25% - 10px)
             }
-        }</style>';
+        }
+        .wmd-button-row{height:unset}</style>';
     }
 
     /**
@@ -183,7 +185,6 @@ class Utils
      */
     public static function isOutdated($archive)
     {
-        date_default_timezone_set("Asia/Shanghai");
         $created = round((time()- $archive->created) / 3600 / 24);
         $updated = round((time()- $archive->modified) / 3600 / 24);
 
@@ -199,14 +200,16 @@ class Utils
      */
     public static function getBuildTime()
     {
-        date_default_timezone_set("Asia/Shanghai");
         $db = Typecho_Db::get();
         $content = $db->fetchRow($db->select()->from('table.contents')
-        ->where('table.contents.status = ?', 'publish')
-        ->where('table.contents.password IS NULL')
-        ->order('table.contents.created', Typecho_Db::SORT_ASC)
-        ->limit(1));
-        echo date('Y-m-d\TH:i', $content['created']);
+            ->where('table.contents.status = ?', 'publish')
+            ->where('table.contents.password IS NULL')
+            ->order('table.contents.created', Typecho_Db::SORT_ASC)
+            ->limit(1));
+        if (count($content))
+            echo date('Y-m-d\TH:i', $content['created']);
+        else
+            echo date('Y-m-d\TH:i');
     }
 
     /**
@@ -250,22 +253,16 @@ class Utils
     }
 
     /**
-     * 总字数
-     * 
-     * @return int
+     * 存在 VOID 插件且满足要求
      */
-    public static function getWordCount()
+    public static function hasVOIDPlugin($req)
     {
-        $db = Typecho_Db::get();
-        $posts = $db->fetchAll($db->select('table.contents.text')
-                    ->from('table.contents')
-                    ->where('table.contents.type = ?', 'post')
-                    ->where('table.contents.status = ?', 'publish'));
-        $total = 0;
-        foreach ($posts as $post) {
-            $total = $total + mb_strlen(preg_replace("/[^\x{4e00}-\x{9fa5}]/u", "", $post['text']), 'UTF-8');
+        if(self::isPluginAvailable('VOID')) {
+            $version_have = VOID_Plugin::$VERSION;
+            if($version_have >= $req) return true;
         }
-        return $total;
+
+        return false;
     }
 
     /**
@@ -275,102 +272,83 @@ class Utils
      */
     public static function getVOIDSettings()
     {
-        $output = array(
-            // 主题设置
-            'defaultBanner' => 'https://i.loli.net/2019/02/11/5c614078f2263.png',
-            'fancyIndex' => false,
+        $options = Helper::options();
+
+        // 主题设置
+        $themeSetting = array(
+            'defaultBanner' => '',
             'enableMath' => false,
-            'fixHeader' => false,
             'head' => '',
             'footer' => '',
             'serifincontent' => false,
             'pjax' => false,
             'pjaxreload' => '',
-            'titleinbanner' => false,
+            'bannerStyle' => 0,
+            'indexStyle' => 0,
             'lazyload' => false,
             'indexBannerTitle' => '',
-            'serviceworker' => false,
-
-            // 高级设置
-            'nav' => '',
-            'name' => '',
-            'welcomeWord' => true,
-            'customNotice' => '',
-            'msgColor' => '',
-            'msgBg' => '',
-            'desktopBannerHeight' => '',
-            'mobileBannerHeight' => '',
-            'indexNoBanner' => false,
-            'defaultCover' => '',
-            'ajaxIndex' => false,
-            'infiniteLoad' => false,
-            'twitterId' => '',
-            'weiboId' => '',
-            'forceNoBanner' => false
+            'indexBannerSubtitle' => '',
+            'serviceworker' => '',
+            'colorScheme' => 0, // 0: 自动，1: 日间，2: 夜间
+            'reward' => ''
         );
 
-        $options = Helper::options();
-
-        if(!empty($options->advance)){
-            $settings = json_decode($options->advance);
-            foreach ($settings as $key => $value) {
-                $output[$key] = $value;
+        $keys = array_keys($themeSetting);
+        foreach ($keys as $key) {
+            if(!empty($options->{$key})){
+                $themeSetting[$key] = $options->{$key};
             }
         }
 
-        $output['defaultBanner'] = $options->defaultBanner;
+        // 一些类型变换
+        $themeSetting['enableMath'] = boolval($themeSetting['enableMath']);
+        $themeSetting['lazyload'] = boolval($themeSetting['lazyload']);
+        $themeSetting['colorScheme'] = intval($themeSetting['colorScheme']);
+        $themeSetting['pjax'] = boolval($themeSetting['pjax']);
+        $themeSetting['serifincontent'] = boolval($themeSetting['serifincontent']);
+        $themeSetting['bannerStyle'] = intval($themeSetting['bannerStyle']);
+        $themeSetting['indexStyle'] = intval($themeSetting['indexStyle']);
 
-        if(!empty($options->enableMath)){
-            if($options->enableMath == '1') $output['enableMath'] = true;
-        }
+        // 高级设置
+        $advanceSetting = array(
+            'nav' => '',
+            'name' => '',
+            'desktopBannerHeight' => '',
+            'mobileBannerHeight' => '',
+            'twitterId' => '',
+            'weiboId' => '',
+            'headerMode' => 1,
+            'defaultFontSize' => 3,
+            'useFiraCodeFont' => false,
+            'followSystemColorScheme' => false,
+            'largePhotoSet' => true,
+            'macStyleCodeBlock' => true,
+            'lineNumbers' => true,
+            'parseFigcaption' => true,
+            'darkModeTime' => array (
+                'start' => 22.0,
+                'end' => 7.0
+            ),
+            'link' => array(),
+            'commentFoldThreshold' => array(5, 1.5),
+            'commentNotification' => '',
+            'bluredLazyload' => false,
+            'CDNType' => array()
+        );
 
-        if(!empty($options->fancyIndex)){
-            if($options->fancyIndex == '1') $output['fancyIndex'] = true;
-        }
-
-        if(!empty($options->fixHeader)){
-            if($options->fixHeader == '1') $output['fixHeader'] = true;
-        }
-
-        if(!empty($options->lazyload)){
-            if($options->lazyload == '1') $output['lazyload'] = true;
-        }
-
-        if(!empty($options->head)){
-            $output['head'] = $options->head;
-        }
-
-        if(!empty($options->indexBannerTitle)){
-            $output['indexBannerTitle'] = $options->indexBannerTitle;
-        }
-
-        if(!empty($options->footer)){
-            $output['footer'] = $options->footer;
-        }
-
-        if(!empty($options->pjax)){
-            if($options->pjax == '1') $output['pjax'] = true;
-        }
-
-        if(!empty($options->serifincontent)){
-            if($options->serifincontent == '1') $output['serifincontent'] = true;
-        }
-        
-        if(!empty($options->pjaxreload)){
-            $output['pjaxreload'] = $options->pjaxreload;
-        }
-
-        if(!empty($options->ajaxIndex)){
-            if($options->ajaxIndex == '1') $output['ajaxIndex'] = true;
+        if(!empty($options->advance)){
+            $settings = json_decode($options->advance, true);
+            foreach ($settings as $key => $value) {
+                $advanceSetting[$key] = $value;
+            }
         }
 
-        if(!empty($options->titleinbanner)){
-            if($options->titleinbanner == '1') $output['titleinbanner'] = true;
+        if(self::isMobile() && array_key_exists('headerModeMobile', $advanceSetting)){
+            $advanceSetting['headerMode'] = $advanceSetting['headerModeMobile'];
         }
 
-        if(!empty($options->serviceworker)){
-            if($options->serviceworker == '1') $output['serviceworker'] = true;
-        }
+        $output = array_merge($themeSetting, $advanceSetting);
+        $output['VOIDPlugin'] = self::hasVOIDPlugin($GLOBALS['VOIDPluginREQ']);
 
         return $output;
     }

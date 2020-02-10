@@ -8,9 +8,15 @@
  * @version     2019-01-15 0.1
  */
 if (!defined('__TYPECHO_ROOT_DIR__')) exit;
-$setting = $GLOBALS['VOIDSetting'];
-?>
+$setting = $GLOBALS['VOIDSetting']; 
 
+if (isset($_POST['void_action'])) {
+    if ($_POST['void_action'] == 'getLoginAction') {
+        echo $this->options->loginAction;
+        exit;
+    }
+}
+?>
 <!DOCTYPE HTML>
 <html>
     <head>
@@ -49,9 +55,11 @@ $setting = $GLOBALS['VOIDSetting'];
     <?php $this->header('commentReply=&description=&'); ?>
 
     <!--CSS-->
-    <link rel="stylesheet" href="<?php Utils::indexTheme('/assets/bundle-ca02fda3c8.css');?>">
-    <link rel="stylesheet" href="<?php Utils::indexTheme('/assets/VOID-0cc733bede.css');?>">
-    
+    <link rel="stylesheet" href="<?php Utils::indexTheme('/assets/bundle-1e9bf597b1.css');?>">
+    <link rel="stylesheet" href="<?php Utils::indexTheme('/assets/VOID-11861506b2.css');?>">
+
+    <!--JS-->
+    <script src="<?php Utils::indexTheme('/assets/bundle-header-9977c8fbf5.js'); ?>"></script>
     <script>
     VOIDConfig = {
         PJAX : <?php echo $setting['pjax'] ? 'true' : 'false'; ?>,
@@ -59,60 +67,51 @@ $setting = $GLOBALS['VOIDSetting'];
         home: "<?php Utils::index("/"); ?>",
         buildTime : "<?php Utils::getBuildTime(); ?>",
         enableMath : <?php echo $setting['enableMath'] ? 'true' : 'false'; ?>,
-        ajaxIndex : <?php echo $setting['ajaxIndex'] ? 'true' : 'false'; ?>,
-        infiniteLoad : <?php echo $setting['infiniteLoad'] ? 'true' : 'false'; ?>,
-        nextUrl : -1,
-        customNotice : "<?php echo $setting['customNotice']; ?>",
-        welcomeWord : <?php echo $setting['welcomeWord'] ? 'true' : 'false'; ?>,
         lazyload : <?php echo $setting['lazyload'] ? 'true' : 'false'; ?>,
-        fixHeader : <?php echo $setting['fixHeader'] ? 'true' : 'false'; ?>,
-    }
-    var likePath="<?php Utils::index('/action/like?up'); ?>";
-    function registerLazyLoadImg(url, target){
-        let background = new Image();
-        background.src = url;
-        background.onload = function () {
-            let el = document.querySelector(target);
-            el.style.backgroundImage = "url("+url+")";
-            el.parentElement.classList.remove("loading");
-            el.classList.add("loaded");
-        }
+        colorScheme:  <?php echo $setting['colorScheme']; ?>,
+        headerMode: <?php echo $setting['headerMode']; ?>,
+        followSystemColorScheme: <?php echo $setting['followSystemColorScheme'] ? 'true' : 'false'; ?>,
+        VOIDPlugin: <?php echo $setting['VOIDPlugin'] ? 'true' : 'false'; ?>,
+        votePath: "<?php Utils::index('/action/void?'); ?>",
+        lightBg: "",
+        darkBg: "",
+        lineNumbers: <?php echo $setting['lineNumbers'] ? 'true' : 'false'; ?>,
+        darkModeTime: {
+            'start': <?php echo $setting['darkModeTime']['start']; ?>,
+            'end': <?php echo $setting['darkModeTime']['end']; ?>
+        },
+        horizontalBg: <?php echo empty($setting['siteBg']) ? 'false' : 'true'; ?>,
+        verticalBg: <?php echo empty($setting['siteBgVertical']) ? 'false' : 'true'; ?>,
+        indexStyle: <?php echo $setting['indexStyle']; ?>,
+        version: <?php echo $GLOBALS['VOIDVersion'] ?>,
+        isDev: true
     }
     </script>
+    <script src="<?php Utils::indexTheme('/assets/header-0afdf04e3f.js'); ?>"></script>
+    
     <?php echo $setting['head']; ?>
     <style>
-    <?php if(!$setting['fixHeader']): ?>
-    body>header{
-        position: <?php if(!$setting['forceNoBanner']) echo 'absolute'; else echo 'relative'; ?>;
-        background: rgba(0,0,0,0.15);
-    }
-    #nprogress .spinner{
-        right: 15px;
-    }
-    <?php endif; ?>
-    <?php if(!empty($setting['desktopBannerHeight'])): ?>
-    @media screen and (min-width: 768px){
-        main>.lazy-wrap{min-height: <?php echo $setting['desktopBannerHeight']; ?>vh;}
-    }
-    <?php endif; ?>
-    <?php if(!empty($setting['mobileBannerHeight'])): ?>
-    @media screen and (max-width: 768px){
-        main>.lazy-wrap{min-height: <?php echo $setting['mobileBannerHeight']; ?>vh;}
-    }
-    <?php endif; ?>
-    <?php if(!empty($setting['msgBg'])): ?>
-    .msg{
-        background: <?php echo $setting['msgBg']; ?>
-    }
-    <?php endif; ?>
-    <?php if(!empty($setting['msgColor'])): ?>
-    .msg{
-        color: <?php echo $setting['msgColor']; ?>
-    }
-    <?php endif; ?>
-    <?php if($setting['serifincontent']): ?>
-    @font-face{font-family:"Droid Serif";src:url("<?php Utils::indexTheme('assets/fonts/Droid-Serif.ttf'); ?>");font-display: swap;}
-    div[itemprop=articleBody],.content{font-family: 'Droid Serif','PingFang SC','Hiragino Sans GB','Microsoft Yahei','WenQuanYi Micro Hei','Segoe UI Emoji','Segoe UI Symbol',Helvetica,Arial,sans-serif}
-    <?php endif; ?>
+        <?php if(!empty($setting['desktopBannerHeight'])): ?>
+        @media screen and (min-width: 768px){
+            main>.lazy-wrap{min-height: <?php echo $setting['desktopBannerHeight']; ?>vh;}
+        }
+        <?php endif; ?>
+
+        <?php if(!empty($setting['mobileBannerHeight'])): ?>
+        @media screen and (max-width: 768px){
+            main>.lazy-wrap{min-height: <?php echo $setting['mobileBannerHeight']; ?>vh;}
+        }
+        <?php endif; ?>
     </style>
+
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,700&display=swap" rel="stylesheet">
+    <?php if(Utils::isSerif($setting)): ?>
+        <link id="stylesheet_noto" href="https://fonts.googleapis.com/css?family=Noto+Serif+SC:300,400,700&display=swap&subset=chinese-simplified" rel="stylesheet">
+    <?php endif; ?>
+
+    <?php if($setting['useFiraCodeFont']): ?>
+        <link href="https://fonts.googleapis.com/css?family=Fira+Code&display=swap" rel="stylesheet">
+        <style>.yue code, .yue tt {font-family: "Fira Code", Menlo, Monaco, Consolas, "Courier New", monospace}</style>
+    <?php endif; ?>
+
     </head>

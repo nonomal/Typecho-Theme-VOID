@@ -1,52 +1,85 @@
-# Typecho Theme VOID
+# Typecho Theme VOID 3.4.0
 
-> 🐒 猴子打字机原理的产物
+> ✏ 一款简洁优雅的 Typecho 主题
 
 作为计算机术语时，VOID 的意思是「无类型」。
 
 ![](https://raw.githubusercontent.com/AlanDecode/Typecho-Theme-VOID/master/screenshot.png)
 
-[![build status](https://img.shields.io/travis/AlanDecode/Typecho-Theme-VOID/source.svg?style=flat-square)](https://travis-ci.org/AlanDecode/Typecho-Theme-VOID)
+[![Build](https://github.com/AlanDecode/Typecho-Theme-VOID/workflows/Build/badge.svg)](https://github.com/AlanDecode/Typecho-Theme-VOID/actions) [![downloads](https://img.shields.io/github/downloads/AlanDecode/Typecho-Theme-VOID/total.svg?style=flat-square)](https://github.com/AlanDecode/Typecho-Theme-VOID/releases) [![](https://img.shields.io/github/release/AlanDecode/Typecho-Theme-VOID.svg?style=flat-square)](https://github.com/AlanDecode/Typecho-Theme-VOID/releases) ![](https://img.shields.io/github/license/AlanDecode/Typecho-Theme-VOID.svg?style=flat-square)
 
 ## 特性
 
-> 演示站点：[熊猫小A的博客](https://blog.imalan.cn)，介绍文章：[VOID：现在可以公开的情报](https://blog.imalan.cn/archives/247/)。
+> 介绍文章：[VOID：现在可以公开的情报](https://blog.imalan.cn/archives/247/)。
 
-* 简版与图片版两种首页样式
+* 响应式设计
 * PJAX 无刷新体验
 * AJAX 评论
-* 响应式设计
+* 前台管理评论（删除、待审、标为垃圾）
+* 前台无跳转登陆（兼容 PJAX）
+* 自动夜间模式
 * 优秀的可读性
-* 代码高亮
+* 衬线、非衬线两种文字风格
+* 代码高亮（浅色暗色两种风格，随主题切换）
+* Mac 风格代码块（可开启或关闭）
+* 代码行号
+* 站点样式设置面板（日夜转换、字体、字号）
 * MathJax 公式
-* 表情解析
+* 表情解析（文章、评论可用）
 * 图片排版（可用作相册）
+* 图片懒加载
 * 灵活的头图设置
-* 目录解析
+* 文章目录解析
+* 完整的结构化数据支持
 * 够用的后台设置与丰富的高级设置
-* ...
+
+结合附带的配套专用插件，还有更多功能：
+
+* 浏览量统计
+* 文章点赞
+* 文章字数统计
+* 评论投票与自动折叠
+* 访客互动展示
 
 以及其他很多细节，总之用起来还算舒服。我建立了一个示例页面，在这里你可以看到 VOID 对常用写作元素的支持以及一些特色功能演示：[示例页面](https://blog.imalan.cn/archives/194/)。
 
 ## 开始使用
 
-1. 下载主题：[发布版](https://github.com/AlanDecode/Typecho-Theme-VOID/releases) | [开发版](https://github.com/AlanDecode/Typecho-Theme-VOID/archive/nightly.zip)
+1. 下载主题：[发布版](https://github.com/AlanDecode/Typecho-Theme-VOID/releases)，注意是下载 VOID-x.x.x.zip 这个压缩包，而不是 Source code
 2. 解压
-3. **把解压后的文件夹重命名为 VOID**
-4. 检查文件夹名是否为 VOID，不是的话改成 VOID
-5. 检查文件夹名是否为 VOID，不是的话改成 VOID
-6. 检查文件夹名是否为 VOID，不是的话改成 VOID
-7. 上传文件夹至站点 /usr/themes 目录下
-8. 后台启用主题
+3. 将**主题文件夹下**的 VOID 文件夹上传至站点 /usr/themes 目录下
+4. 后台启用主题
+5. 将**配套插件文件夹下**的 VOID 文件夹上传至站点 /usr/plugins 目录下
+6. 后台启用插件
 
 * 可选：将主题 `assets` 文件夹下的 `VOIDCacheRule.js` 复制一份到站点根目录，并在主题设置中启用 Service Worker 缓存。
 * 可选：主题文件夹下 advanceSetting.sample.json 中有一些高级设置，可以看看。
 
+开发版主题可以在这里获取：[开发版](https://github.com/AlanDecode/Typecho-Theme-VOID/archive/nightly.zip)。注意，不保证开发版有更新更多的功能。而且开发版变动频繁，若无必要请使用发布版主题。
+
 ## **常见问题（请务必仔细阅读）**
+
+<details><summary>如何开启文章点赞？</summary><br>
+
+文章点赞功能依赖配套插件，请上传至插件目录并启用。插件一般会随主题包发布，开发版主题请前往 https://github.com/AlanDecode/VOID-Plugin 获取。
+
+</details>
+
+<details><summary>如何开启文章浏览量统计？</summary><br>
+
+文章浏览量统计功能依赖配套插件，请上传至插件目录并启用。插件一般会随主题包发布，开发版主题请前往 https://github.com/AlanDecode/VOID-Plugin 获取。
+
+</details>
+
+<details><summary>如何开启文章字数统计？</summary><br>
+
+文章字数统计功能依赖配套插件，请上传至插件目录并启用。插件一般会随主题包发布，开发版主题请前往 https://github.com/AlanDecode/VOID-Plugin 获取。
+
+</details>
 
 <details><summary>下载安装后样式不对？</summary><br>
 
-仓库中的是未压缩的源代码，包含大量实际使用中不需要的文件，并且可能无法直接使用。请一定通过这两个链接下载主题：[发布版](https://github.com/AlanDecode/Typecho-Theme-VOID/releases) | [开发版](https://github.com/AlanDecode/Typecho-Theme-VOID/archive/nightly.zip)
+仓库中的是未压缩的源代码，包含大量实际使用中不需要的文件，并且可能无法直接使用。请一定通过这两个链接下载主题：[发布版](https://github.com/AlanDecode/Typecho-Theme-VOID/releases) | [开发版](https://github.com/AlanDecode/Typecho-Theme-VOID/archive/nightly.zip)。注意其中发布版是下载 VOID-x.x.x.zip 这个压缩包，而不是 Source code。
 
 </details>
 
@@ -67,7 +100,17 @@
 [/links]
 ```
 
-文章中、独立页面中都可以通过该语法插入类似的展示块。
+文章中、独立页面中都可以通过该语法插入类似的展示块。在某些 Typecho 版本中 HTML 会被转义后输出，请使用 `!!!` 包裹以上代码，例如：
+
+```
+!!!
+[links]
+···
+[/links]
+!!!
+```
+
+`!!!` 需要单独占一行。
 
 </details>
 
@@ -88,17 +131,31 @@
 [/photos]
 ```
 
+在某些 Typecho 版本中 HTML 会被转义后输出，请使用 `!!!` 包裹以上代码，例如：
+
+```
+!!!
+[photos]
+···
+[/photos]
+!!!
+```
+
+`!!!` 需要单独占一行。
+
 </details>
 
-<details><summary>浏览量统计</summary><br>
+<details><summary>增强的 Markdown 语法</summary><br>
 
-使用插件：[TePostViews](https://github.com/AlanDecode/TePostViews)
+* 注音语法：`{{文本:zhu yin}}`，会渲染为：<ruby>文本<rp> (</rp><rt>zhu yin</rt><rp>)</rp></ruby>
+* notice 提示块：`[notice]提示内容[/notice]`
 
 </details>
 
-<details><summary>文章点赞</summary><br>
+<details><summary>页面空白</summary><br>
 
-使用插件：[Like](https://github.com/AlanDecode/Like)
+* 首先检查是否有插件重复引入了 JQuery，若有，在插件设置页面关闭。
+* 另外，推荐使用 PHP 7.0 及以上版本搭配 MySQL 数据库。PHP 5.6 或者更低版本可能出现未知问题（并且我不会去修复）。
 
 </details>
 
@@ -106,7 +163,9 @@
 
 同[开始使用](#开始使用)，区别是你可以直接覆盖主题文件，不禁用主题，这样你的主题设置就不会丢失。
 
-## 开发
+## 开发与自定义
+
+**首先注意：我不保证提供任何自定义修改相关的指导与帮助。You are on your own.**
 
 <details><summary>展开详情</summary><br>
 
@@ -123,13 +182,13 @@ npm install -g gulp
 npm install
 ```
 
-然后将依赖打包：
+用以下命令打包依赖的 JS 和 CSS：
 
 ```bash
 gulp dev
 ```
 
-你可以使用自己喜欢的方式编译 SCSS，或者使用：
+主题的样式是用 SCSS 写的，你可以使用自己喜欢的方式编译 SCSS，或者使用：
 
 ```bash
 gulp sass
@@ -147,16 +206,29 @@ gulp build
 
 ## 更新日志
 
-**2019-03-14 Version 1.6.4**
+**🍰 2019-10-26 Version 3.4.0**
 
-* 可设置是否固定导航栏
-* 自定义下拉栏中链接可设置 target 属性
-* 登录时编辑按钮位置移动
-* 优化字体显示
-* 首页风格设置移动至主题设置
-* 整体色调调整
-* 代码块更改为暗色
-* 消灭了一些臭虫
+*该版本依赖 VOID 插件 1.20 及以上版本，请先禁用原插件，上传新插件后重新启用插件*
+
+* 新增：为图片获取基础信息，详见[关于 VOID 主题自动获取图片基础信息](https://blog.imalan.cn/archives/void-fetch-img-basic-info/)
+* 新增：新的平滑滚动效果
+* 优化：通过 iframe 嵌入 Bilibili 播放器时可自适应宽高
+* 优化：图片懒加载功能
+* 优化：夜间模式下 APlayer 播放器样式
+* 优化：内容解析性能
+* 调整：替换默认西文字体为 Droid Serif
+* 修复：PJAX 跳转后首页图片懒加载可能失效的问题
+* 修复：当文章中存在相同的标题时无法点击目录跳转的问题
+* 修复：修复一个可能导致插件启用失败的问题
+* 修复：不同时区导致建站时间计算不准确的问题
+* 修复：懒加载与 Google Ads 冲突的问题
+* 修复：不正确的头图高度
+* 修复：未启用插件时投票功能未被禁用的问题
+* 移除：站点背景图设置
+
+注意，3.4.0 版本主题依赖 1.20 及以上版本插件，请先禁用原插件，上传新版插件后重新启用。
+
+从 2.2 版本起，主题部分功能需要配套插件支持，例如文章点赞、浏览量统计、字数统计等。**请先卸载**原来的 Likes、TePostViews 插件，否则数据会出现错误！TePostViews 插件卸载前请设置为**卸载后保留数据**，以防丢失浏览数据。
 
 更多：[change-log.md](https://github.com/AlanDecode/Typecho-Theme-VOID/blob/master/change-log.md)
 
@@ -164,7 +236,7 @@ gulp build
 
 ### 开源项目
 
-[JQuery](https://github.com/jquery/jquery) | [highlight.js](https://highlightjs.org/) | [MathJax](https://www.mathjax.org/) | [fancyBox](http://fancyapps.com/fancybox/3/) | [bigfoot.js](http://www.bigfootjs.com/) | [OwO](https://github.com/DIYgod/OwO) | [pjax](https://github.com/defunkt/jquery-pjax) | [yue.css](https://github.com/lepture/yue.css) | [tocbot](https://tscanlin.github.io/tocbot/) | [pangu.js](https://github.com/vinta/pangu.js) | [social](https://github.com/lepture/social)
+[JQuery](https://github.com/jquery/jquery) | [PrismJS](https://prismjs.com/index.html) | [MathJax](https://www.mathjax.org/) | [fancyBox](http://fancyapps.com/fancybox/3/) | [bigfoot.js](http://www.bigfootjs.com/) | [OwO](https://github.com/DIYgod/OwO) | [pjax](https://github.com/defunkt/jquery-pjax) | [yue.css](https://github.com/lepture/yue.css) | [tocbot](https://tscanlin.github.io/tocbot/) | [pangu.js](https://github.com/vinta/pangu.js) | [social](https://github.com/lepture/social) | [Headroom.js](http://wicky.nillia.ms/headroom.js/) | [hypher](https://github.com/bramstein/hypher)
 
 ### 其他
 
